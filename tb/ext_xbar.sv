@@ -6,6 +6,9 @@ module ext_xbar #(
     parameter core_v_mini_mcu_pkg::bus_type_e BUS_TYPE = core_v_mini_mcu_pkg::BusType,
     parameter int unsigned XBAR_NMASTER = 3,
     parameter int unsigned XBAR_NSLAVE = 6,
+    // OBI data types
+    parameter type obi_req_t = logic,
+    parameter type obi_rsp_t = logic,
     // Dependent parameters: do not override!
     localparam int unsigned IdxWidth = cf_math_pkg::idx_width(XBAR_NSLAVE)
 ) (
@@ -19,15 +22,14 @@ module ext_xbar #(
     input logic [IdxWidth-1:0] default_idx_i,
 
     // Master ports
-    input  obi_pkg::obi_req_t  [XBAR_NMASTER-1:0] master_req_i,
-    output obi_pkg::obi_resp_t [XBAR_NMASTER-1:0] master_resp_o,
+    input  obi_req_t [XBAR_NMASTER-1:0] master_req_i,
+    output obi_rsp_t [XBAR_NMASTER-1:0] master_resp_o,
 
     // Slave ports
-    output obi_pkg::obi_req_t  [XBAR_NSLAVE-1:0] slave_req_o,
-    input  obi_pkg::obi_resp_t [XBAR_NSLAVE-1:0] slave_resp_i
+    output obi_req_t [XBAR_NSLAVE-1:0] slave_req_o,
+    input  obi_rsp_t [XBAR_NSLAVE-1:0] slave_resp_i
 
 );
-  import obi_pkg::*;
   import core_v_mini_mcu_pkg::*;
   import testharness_pkg::*;
 
@@ -43,7 +45,7 @@ module ext_xbar #(
   logic [XBAR_NMASTER-1:0][31:0] post_master_req_addr;
   // Neck crossbar
   obi_req_t neck_req;
-  obi_resp_t neck_resp;
+  obi_rsp_t neck_resp;
 
   logic [XBAR_NMASTER-1:0] master_req_req;
   logic [XBAR_NMASTER-1:0] master_resp_gnt;
@@ -137,7 +139,9 @@ module ext_xbar #(
     end else begin : gen_xbar_1toM
       // N-to-1 crossbar
       xbar_varlat_n_to_one #(
-          .XBAR_NMASTER(XBAR_NMASTER)
+          .XBAR_NMASTER(XBAR_NMASTER),
+          .obi_req_t(obi_req_t),
+          .obi_rsp_t(obi_rsp_t)
       ) i_xbar_master (
           .clk_i        (clk_i),
           .rst_ni       (rst_ni),
@@ -150,7 +154,9 @@ module ext_xbar #(
       // 1-to-N crossbar
       xbar_varlat_one_to_n #(
           .XBAR_NSLAVE   (XBAR_NSLAVE),
-          .AGGREGATE_GNT (32'd0) // the neck request is aggregating all the input masters
+          .AGGREGATE_GNT (32'd0), // the neck request is aggregating all the input masters
+          .obi_req_t(obi_req_t),
+          .obi_rsp_t(obi_rsp_t)
       ) i_xbar_slave (
           .clk_i        (clk_i),
           .rst_ni       (rst_ni),
