@@ -58,7 +58,7 @@ module memory_subsystem #(
       if (!rst_ni) begin
         ram_valid_q[i] <= '0;
       end else begin
-        ram_valid_q[i] <= ram_resp_o[i].gnt;
+        ram_valid_q[i] <= ram_resp_o[i].gnt & ram_req_i[i].req;;
       end
     end
 
