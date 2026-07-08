@@ -407,6 +407,8 @@ targets:
     - USE_UPF
     - REMOVE_OBI_FIFO
     - SIM_SYSTEMC=true
+    - COMMON_CELLS_ASSERTS_OFF
+    - ASSERTS_OFF
     hooks:
       pre_run:
         - remove_uart_log
